@@ -1,8 +1,17 @@
 import { NestFactory } from '@nestjs/core'
-import { JobScheduleModule } from './job-schedule.module'
+import { Transport, MicroserviceOptions } from '@nestjs/microservices'
+import { JobScheduleModule } from '@job-schedule/job-schedule.module'
 
 async function bootstrap() {
-	const app = await NestFactory.create(JobScheduleModule)
-	await app.listen(3000)
+	const port = Number(process.env.JOB_SCHEDULE_PORT ?? 5052)
+	const app = await NestFactory.createMicroservice<MicroserviceOptions>(JobScheduleModule, {
+		transport: Transport.TCP,
+		options: {
+			port: port
+		}
+	})
+	await app.listen().then(() => {
+		console.log('MQ服务启动:', `TCP:${port}`)
+	})
 }
 bootstrap()
